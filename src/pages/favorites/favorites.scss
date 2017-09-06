@@ -1,3 +1,6 @@
 page-favorites {
-
+    // another class for color changing the background using ngClass directive
+    .alt{
+        background-color: color($colors, altQuoteBackground);
+    }
 }

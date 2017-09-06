@@ -1,12 +1,10 @@
+import { SettingsService } from './../../services/services';
+import { QuotePage } from './../quote/quote';
+import { QuotesServices } from './../../services/quotes';
+import { Quote } from './../../data/data.interface';
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { IonicPage, ModalController, MenuController } from 'ionic-angular';
 
-/**
- * Generated class for the FavoritesPage page.
- *
- * See http://ionicframework.com/docs/components/#navigation for more info
- * on Ionic pages and navigation.
- */
 @IonicPage()
 @Component({
   selector: 'page-favorites',
@@ -14,11 +12,54 @@ import { IonicPage, NavController, NavParams } from 'ionic-angular';
 })
 export class FavoritesPage {
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
+  quotes: Quote[];
+
+  constructor(
+    private quotesService: QuotesServices,
+    private modalCtrl: ModalController,
+    private menuCtrl: MenuController,
+    private settingsService: SettingsService
+  ) {}
+  
+  // will be executed also when caching is working
+  ionViewWillEnter() {
+    this.quotes = this.quotesService.getFavoritesQuotes();
   }
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad FavoritesPage');
+  /**
+   * 
+   * 
+   * @param {Quote} quote 
+   * @memberof FavoritesPage
+   */
+  onViewQuote(quote: Quote) {
+    const modal = this.modalCtrl.create(QuotePage, quote);
+    modal.present();
+    /**
+     * need to listen to the modal close, so if we receive the info to remove
+     * some data we need to.
+     */
+     
+    modal.onDidDismiss((remove: boolean) => {
+      if (remove == true) {
+        this.onRemoveFromFavorites(quote);
+      }
+    });
+  }
+  onRemoveFromFavorites(quote: Quote) {
+    this.quotesService.removeQuoteFromFavorites(quote);
+    const position = this.quotes.findIndex((quoteEl: Quote) => {
+      return quoteEl.id == quote.id;
+    });
+    this.quotes.splice(position, 1);
+  }
+
+  onOpenMenu() {
+    this.menuCtrl.open();
+  }
+
+  getBackground() {
+    return this.settingsService.isAltBackground() ? 'altQuoteBackground' : 'quoteBackground'
   }
 
 }
